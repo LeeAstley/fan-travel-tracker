@@ -1,4 +1,6 @@
-export const VENUE_COORDS = {
+const fs = require('fs');
+
+const content = `export const VENUE_COORDS = {
   57:  { name: "Emirates Stadium", city: "London", lat: 51.5549, lng: -0.1084 },
   61:  { name: "Stamford Bridge", city: "London", lat: 51.4816, lng: -0.1909 },
   62:  { name: "Goodison Park", city: "Liverpool", lat: 53.4388, lng: -2.9661 },
@@ -80,3 +82,7 @@ export const EURO_VENUE_COORDS = {
   "feyenoord": { lat: 51.8933, lng: 4.5232 },
   "psv": { lat: 51.4416, lng: 5.4670 },
 };
+`;
+
+fs.writeFileSync('lib/venues.ts', content);
+console.log('Done!');
