@@ -1,4 +1,4 @@
-export const VENUE_COORDS = {
+export const VENUE_COORDS: Record<number, { name: string; city: string; lat: number; lng: number }> = {
   57:  { name: "Emirates Stadium", city: "London", lat: 51.5549, lng: -0.1084 },
   61:  { name: "Stamford Bridge", city: "London", lat: 51.4816, lng: -0.1909 },
   62:  { name: "Goodison Park", city: "Liverpool", lat: 53.4388, lng: -2.9661 },
