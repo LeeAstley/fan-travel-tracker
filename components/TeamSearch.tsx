@@ -32,4 +32,105 @@ const UK_TEAMS: Team[] = [
   { id: 72,   name: "Swansea City AFC",            shortName: "Swansea",        tla: "SWA", crest: "https://crests.football-data.org/72.png",   competition: "Championship" },
   { id: 74,   name: "West Bromwich Albion FC",     shortName: "West Brom",      tla: "WBA", crest: "https://crests.football-data.org/74.png",   competition: "Championship" },
   { id: 322,  name: "Hull City AFC",               shortName: "Hull",           tla: "HUL", crest: "https://crests.football-data.org/322.png",  competition: "Championship" },
-  { id: 325,  name:
+  { id: 325,  name: "Portsmouth FC", shortName: "Portsmouth", tla: "POR", crest: "https://crests.football-data.org/325.png", competition: "Championship" },
+  { id: 332, name: "Birmingham City FC", shortName: "Birmingham", tla: "BIR", crest: "https://crests.football-data.org/332.png", competition: "Championship" },
+  { id: 341, name: "Leeds United FC", shortName: "Leeds", tla: "LEE", crest: "https://crests.football-data.org/341.png", competition: "Championship" },
+  { id: 342, name: "Derby County FC", shortName: "Derby", tla: "DER", crest: "https://crests.football-data.org/342.png", competition: "Championship" },
+  { id: 343, name: "Middlesbrough FC", shortName: "Middlesbrough", tla: "MID", crest: "https://crests.football-data.org/343.png", competition: "Championship" },
+  { id: 345, name: "Sheffield Wednesday FC", shortName: "Sheffield Wed", tla: "SWE", crest: "https://crests.football-data.org/345.png", competition: "Championship" },
+  { id: 346, name: "Watford FC", shortName: "Watford", tla: "WAT", crest: "https://crests.football-data.org/346.png", competition: "Championship" },
+  { id: 348, name: "Charlton Athletic FC", shortName: "Charlton", tla: "CHA", crest: "https://crests.football-data.org/348.png", competition: "Championship" },
+  { id: 351, name: "Nottingham Forest FC", shortName: "Nott Forest", tla: "NFO", crest: "https://crests.football-data.org/351.png", competition: "Premier League" },
+  { id: 356, name: "Sheffield United FC", shortName: "Sheffield Utd", tla: "SHU", crest: "https://crests.football-data.org/356.png", competition: "Championship" },
+  { id: 383, name: "Luton Town FC", shortName: "Luton", tla: "LUT", crest: "https://crests.football-data.org/383.png", competition: "Championship" },
+  { id: 384, name: "Millwall FC", shortName: "Millwall", tla: "MIL", crest: "https://crests.football-data.org/384.png", competition: "Championship" },
+  { id: 387, name: "Bristol City FC", shortName: "Bristol City", tla: "BRC", crest: "https://crests.football-data.org/387.png", competition: "Championship" },
+  { id: 404, name: "Wrexham AFC", shortName: "Wrexham", tla: "WRE", crest: "https://crests.football-data.org/404.png", competition: "Championship" },
+  { id: 1076, name: "Coventry City FC", shortName: "Coventry", tla: "COV", crest: "https://crests.football-data.org/1076.png", competition: "Championship" },
+  { id: 1081, name: "Preston North End FC", shortName: "Preston", tla: "PRE", crest: "https://crests.football-data.org/1081.png", competition: "Championship" },
+  { id: 1082, name: "Oxford United FC", shortName: "Oxford Utd", tla: "OXF", crest: "https://crests.football-data.org/1082.png", competition: "Championship" },
+  { id: 9825, name: "Celtic FC", shortName: "Celtic", tla: "CEL", crest: "https://crests.football-data.org/9825.png", competition: "Scottish Premiership" },
+  { id: 9826, name: "Rangers FC", shortName: "Rangers", tla: "RAN", crest: "https://crests.football-data.org/9826.png", competition: "Scottish Premiership" },
+];
+
+interface Props {
+  onSelect: (team: Team) => void;
+  selected: Team | null;
+}
+
+export default function TeamSearch({ onSelect, selected }: Props) {
+  const [query, setQuery] = useState(selected?.name ?? "");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selected) setQuery(selected.name);
+  }, [selected]);
+
+  const results = query.length < 2 ? [] : UK_TEAMS.filter((t) =>
+    t.name.toLowerCase().includes(query.toLowerCase()) ||
+    t.shortName.toLowerCase().includes(query.toLowerCase()) ||
+    t.tla.toLowerCase().includes(query.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+          if (selected) onSelect(null as unknown as Team);
+        }}
+        onFocus={() => setOpen(true)}
+        placeholder="e.g. Arsenal, Leeds United"
+        style={{
+          width: "100%", background: "#11111a",
+          border: "1px solid #2a2a3a", borderRadius: 8,
+          padding: "12px 16px", color: "#e8e8ec", fontSize: 15, outline: "none",
+        }}
+      />
+      {open && results.length > 0 && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+          background: "#16161f", border: "1px solid #2a2a3a", borderRadius: 8,
+          zIndex: 50, overflow: "hidden", boxShadow: "0 8px 32px #00000088",
+          maxHeight: 320, overflowY: "auto",
+        }}>
+          {results.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { onSelect(t); setQuery(t.name); setOpen(false); }}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                width: "100%", padding: "10px 14px",
+                background: "transparent", border: "none",
+                color: "#e8e8ec", cursor: "pointer", textAlign: "left",
+                borderBottom: "1px solid #1e1e2a",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#1e1e2e")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <img src={t.crest} alt="" width={22} height={22} style={{ objectFit: "contain" }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{t.name}</div>
+                <div style={{ fontSize: 11, color: "#6060a0" }}>{t.competition}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
