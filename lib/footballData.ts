@@ -3,7 +3,6 @@ import { Match, Team } from "./types";
 
 const FD_BASE = "https://api.football-data.org/v4";
 
-// All competitions we want to fetch (football-data.org codes)
 export const COMPETITIONS = [
   { code: "PL",   name: "Premier League",     tier: 1 },
   { code: "ELC",  name: "Championship",       tier: 2 },
@@ -17,30 +16,13 @@ export const COMPETITIONS = [
 export async function fdFetch(path: string, apiKey: string) {
   const res = await fetch(`${FD_BASE}${path}`, {
     headers: { "X-Auth-Token": apiKey },
-    next: { revalidate: 3600 }, // cache 1 hour
+    next: { revalidate: 3600 },
   });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`football-data.org error ${res.status}: ${text}`);
   }
   return res.json();
-}
-
-/** Search teams by name */
-export async function searchTeams(name: string, apiKey: string): Promise<Team[]> {
-  try {
-    const data = await fdFetch(`/teams?name=${encodeURIComponent(name)}&limit=10`, apiKey);
-    return (data.teams || []).map((t: TeamRaw) => ({
-      id: t.id,
-      name: t.name,
-      shortName: t.shortName,
-      tla: t.tla,
-      crest: t.crest,
-      competition: t.runningCompetitions?.[0]?.name ?? "",
-    }));
-  } catch {
-    return [];
-  }
 }
 
 interface TeamRaw {
@@ -63,7 +45,30 @@ interface MatchRaw {
   venue?: string;
 }
 
-/** Fetch all matches for a team in current season across multiple competitions */
+export async function searchTeams(name: string, apiKey: string): Promise<Team[]> {
+  try {
+    const data = await fdFetch(`/teams?name=${encodeURIComponent(name)}`, apiKey);
+    const all: TeamRaw[] = data.teams || [];
+    const lower = name.toLowerCase();
+    const filtered = all.filter(
+      (t) =>
+        t.name.toLowerCase().includes(lower) ||
+        t.shortName?.toLowerCase().includes(lower) ||
+        t.tla?.toLowerCase().includes(lower)
+    );
+    return (filtered.length > 0 ? filtered : all).slice(0, 10).map((t) => ({
+      id: t.id,
+      name: t.name,
+      shortName: t.shortName,
+      tla: t.tla,
+      crest: t.crest,
+      competition: t.runningCompetitions?.[0]?.name ?? "",
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchTeamMatches(
   teamId: number,
   season: number,
@@ -71,7 +76,6 @@ export async function fetchTeamMatches(
 ): Promise<Match[]> {
   const allMatches: Match[] = [];
 
-  // Try each competition
   for (const comp of COMPETITIONS) {
     try {
       const data = await fdFetch(
@@ -83,7 +87,6 @@ export async function fetchTeamMatches(
       );
       for (const m of relevant) {
         const isHome = m.homeTeam.id === teamId;
-        const opponentId = isHome ? m.awayTeam.id : m.homeTeam.id;
         const venueTeamId = m.homeTeam.id;
         const venueData = VENUE_COORDS[venueTeamId];
 
@@ -104,16 +107,15 @@ export async function fetchTeamMatches(
           status: m.status,
           score: { home: m.score?.fullTime?.home ?? null, away: m.score?.fullTime?.away ?? null },
           isHome,
-          milesOneWay: 0, // filled in by distances API
+          milesOneWay: 0,
           attended: true,
         });
       }
     } catch {
-      // competition not available for this team — skip
+      // competition not available — skip
     }
   }
 
-  // Deduplicate by match id (FA Cup / EFL can appear in multiple queries)
   const seen = new Set<number>();
   return allMatches.filter((m) => {
     if (seen.has(m.id)) return false;
@@ -122,13 +124,11 @@ export async function fetchTeamMatches(
   });
 }
 
-/** Resolve venue coords for a match using opponent name fallback for European games */
 export function resolveVenueCoords(
   match: Match
 ): { lat: number; lng: number } | null {
   if (match.venue.lat !== 0) return { lat: match.venue.lat, lng: match.venue.lng };
 
-  // Try fuzzy match on home team name in EURO_VENUE_COORDS
   const home = match.homeTeam.toLowerCase();
   for (const [key, coords] of Object.entries(EURO_VENUE_COORDS)) {
     if (home.includes(key) || key.includes(home.split(" ")[0])) {
