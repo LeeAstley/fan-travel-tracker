@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
   const teamId = parseInt(req.nextUrl.searchParams.get("teamId") ?? "0");
   const postcode = req.nextUrl.searchParams.get("postcode") ?? "";
-  const season = parseInt(req.nextUrl.searchParams.get("season") ?? "2024");
+  const season = parseInt(req.nextUrl.searchParams.get("season") ?? "2025");
 
   if (!teamId || !postcode) {
     return NextResponse.json({ error: "teamId and postcode are required" }, { status: 400 });
@@ -35,8 +35,24 @@ export async function GET(req: NextRequest) {
     let venueLat = m.venue.lat;
     let venueLng = m.venue.lng;
 
-    // If API didn't return coordinates, use name fallback
-    if (!venueLat || !venueLng || venueLat === 0) {
+    // If API returned valid coordinates, use them directly
+    if (venueLat && venueLng && venueLat !== 0 && venueLng !== 0) {
+      const miles = haversineRoadMiles(userCoords.lat, userCoords.lng, venueLat, venueLng);
+      return { ...m, milesOneWay: miles };
+    }
+
+    // Try matching by venue name first (catches neutral venues like finals)
+    const venueName = m.venue.name.toLowerCase();
+    for (const [key, venue] of Object.entries(VENUE_NAME_FALLBACK)) {
+      if (venueName.includes(key) || key.includes(venueName.split(" ")[0])) {
+        venueLat = venue.lat;
+        venueLng = venue.lng;
+        break;
+      }
+    }
+
+    // Then try matching by home team name
+    if (!venueLat || venueLat === 0) {
       const homeName = m.homeTeam.toLowerCase();
       for (const [key, venue] of Object.entries(VENUE_NAME_FALLBACK)) {
         if (homeName.includes(key) || key.includes(homeName.split(" ")[0])) {
@@ -47,7 +63,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    if (!venueLat || !venueLng || venueLat === 0) {
+    if (!venueLat || venueLat === 0) {
       return { ...m, milesOneWay: 0 };
     }
 
