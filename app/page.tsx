@@ -7,11 +7,17 @@ import MatchList from "@/components/MatchList";
 import { Team, Match } from "@/lib/types";
 import { computeSummary } from "@/lib/summary";
 
-const CURRENT_SEASON = 2024;
+const SEASONS = [
+  2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015,
+  2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005,
+  2004, 2003, 2002, 2001, 2000, 1999, 1998, 1997, 1996, 1995,
+  1994, 1993, 1992,
+];
 
 export default function Home() {
   const [team, setTeam] = useState<Team | null>(null);
   const [postcode, setPostcode] = useState("");
+  const [season, setSeason] = useState(2024);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,7 +33,7 @@ export default function Home() {
     setMatches([]);
     try {
       const res = await fetch(
-        `/api/fixtures?teamId=${team.id}&postcode=${encodeURIComponent(postcode.trim())}&season=${CURRENT_SEASON}`
+        `/api/fixtures?teamId=${team.id}&postcode=${encodeURIComponent(postcode.trim())}&season=${season}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to fetch fixtures");
@@ -38,7 +44,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [team, postcode]);
+  }, [team, postcode, season]);
 
   const toggleAttended = useCallback((id: number) => {
     setMatches((prev) =>
@@ -83,7 +89,7 @@ export default function Home() {
             textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 14,
           }}>Your details</div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 160px", gap: 12, marginBottom: 14 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, color: "#6060a0", marginBottom: 6 }}>Club</label>
               <TeamSearch selected={team} onSelect={setTeam} />
@@ -95,13 +101,30 @@ export default function Home() {
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="e.g. PO21 1LJ"
+                placeholder="e.g. IG11 9TJ"
                 style={{
                   width: "100%", background: "#0f0f17",
                   border: "1px solid #2a2a3a", borderRadius: 8,
                   padding: "12px 16px", color: "#e8e8ec", fontSize: 15, outline: "none",
                 }}
               />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 12, color: "#6060a0", marginBottom: 6 }}>Season</label>
+              <select
+                value={season}
+                onChange={(e) => setSeason(parseInt(e.target.value))}
+                style={{
+                  width: "100%", background: "#0f0f17",
+                  border: "1px solid #2a2a3a", borderRadius: 8,
+                  padding: "12px 16px", color: "#e8e8ec", fontSize: 15, outline: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {SEASONS.map((s) => (
+                  <option key={s} value={s}>{s}/{String(s + 1).slice(2)}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -124,7 +147,7 @@ export default function Home() {
                   border: "2px solid #4488ff", borderTopColor: "transparent",
                   animation: "spin 0.7s linear infinite",
                 }} />
-                Loading fixtures…
+                Loading fixtures...
               </>
             ) : "Calculate my miles →"}
           </button>
@@ -177,12 +200,11 @@ export default function Home() {
               {team && (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                   {team.crest && (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={team.crest} alt="" width={32} height={32} style={{ objectFit: "contain" }} />
                   )}
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 800 }}>{team.name}</div>
-                    <div style={{ fontSize: 11, color: "#6060a0" }}>2025/26 season · from {postcode.toUpperCase()}</div>
+                    <div style={{ fontSize: 11, color: "#6060a0" }}>{season}/{String(season + 1).slice(2)} season · from {postcode.toUpperCase()}</div>
                   </div>
                 </div>
               )}
@@ -194,9 +216,9 @@ export default function Home() {
         {!loading && matches.length === 0 && !error && (
           <div style={{ textAlign: "center", padding: "64px 0" }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>⚽</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: "#40406a" }}>Pick your club and postcode to get started</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "#40406a" }}>Pick your club, postcode and season</div>
             <div style={{ fontSize: 13, marginTop: 6, color: "#30305a" }}>
-              We&apos;ll calculate every mile you&apos;d travel this season in every competition
+              We will calculate every mile you travelled in every competition
             </div>
           </div>
         )}
