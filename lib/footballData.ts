@@ -1,4 +1,4 @@
-import { VENUE_COORDS, EURO_VENUE_COORDS } from "./venues";
+import { VENUE_COORDS, VENUE_NAME_FALLBACK, EURO_VENUE_COORDS } from "./venues";
 import { Match, Team } from "./types";
 
 const FD_BASE = "https://api.football-data.org/v4";
@@ -87,8 +87,12 @@ export async function fetchTeamMatches(
       );
       for (const m of relevant) {
         const isHome = m.homeTeam.id === teamId;
-        const venueTeamId = m.homeTeam.id;
-        const venueData = VENUE_COORDS[venueTeamId];
+       const venueTeamId = m.homeTeam.id;
+const homeName = m.homeTeam.name.toLowerCase();
+const venueData = VENUE_COORDS[venueTeamId] ??
+  Object.entries(VENUE_NAME_FALLBACK).find(([key]) =>
+    homeName.includes(key) || key.includes(homeName.split(" ")[0])
+  )?.[1];
 
         allMatches.push({
           id: m.id,
