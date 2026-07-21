@@ -156,4 +156,4 @@ export const EURO_VENUE_COORDS: Record<string, { lat: number; lng: number }> = {
   "slavia prague": { lat: 50.0673, lng: 14.4748 },
   "athletic bilbao": { lat: 43.2642, lng: -2.9494 },
   "sevilla": { lat: 37.3840, lng: -5.9705 },
-  "olympiacos": { lat:
+  "olympiacos": { lat: 37.9667, lng: 23.7330 },
