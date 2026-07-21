@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchTeamMatches, resolveVenueCoords } from "@/lib/footballData";
+import { fetchTeamMatches } from "@/lib/footballData";
 import { postcodeToLatLng, haversineRoadMiles } from "@/lib/geo";
-import { Match } from "@/lib/types";
+import { VENUE_NAME_FALLBACK } from "@/lib/venues";
 
 export async function GET(req: NextRequest) {
   const apiKey = process.env.API_FOOTBALL_KEY;
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: `Could not find postcode: ${postcode}` }, { status: 400 });
   }
 
-  let matches: Match[];
+  let matches;
   try {
     matches = await fetchTeamMatches(teamId, season, apiKey);
   } catch (e) {
@@ -32,17 +32,33 @@ export async function GET(req: NextRequest) {
   }
 
   const matchesWithDistances = matches.map((m) => {
-    const coords = resolveVenueCoords(m);
-    if (!coords || (coords.lat === 0 && coords.lng === 0)) {
+    let venueLat = m.venue.lat;
+    let venueLng = m.venue.lng;
+
+    // If API didn't return coordinates, use name fallback
+    if (!venueLat || !venueLng || venueLat === 0) {
+      const homeName = m.homeTeam.toLowerCase();
+      for (const [key, venue] of Object.entries(VENUE_NAME_FALLBACK)) {
+        if (homeName.includes(key) || key.includes(homeName.split(" ")[0])) {
+          venueLat = venue.lat;
+          venueLng = venue.lng;
+          break;
+        }
+      }
+    }
+
+    if (!venueLat || !venueLng || venueLat === 0) {
       return { ...m, milesOneWay: 0 };
     }
+
     const miles = haversineRoadMiles(
       userCoords.lat, userCoords.lng,
-      coords.lat, coords.lng
+      venueLat, venueLng
     );
+
     return {
       ...m,
-      venue: { ...m.venue, lat: coords.lat, lng: coords.lng },
+      venue: { ...m.venue, lat: venueLat, lng: venueLng },
       milesOneWay: miles,
     };
   });
