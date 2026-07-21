@@ -55,5 +55,9 @@ export async function GET(req: NextRequest) {
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-  return NextResponse.json({ matches: matchesWithDistances, userCoords });
+const missingVenues = matchesWithDistances
+  .filter(m => m.milesOneWay === 0)
+  .map(m => ({ homeTeamId: m.homeTeamId, homeTeam: m.homeTeam, venue: m.venue.name }));
+
+return NextResponse.json({ matches: matchesWithDistances, userCoords, missingVenues });
 }
