@@ -2,7 +2,6 @@ import { Match } from "./types";
 
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 
-// League IDs for API-Football
 export const LEAGUES = [
   { id: 39,  name: "Premier League" },
   { id: 40,  name: "Championship" },
@@ -12,6 +11,31 @@ export const LEAGUES = [
   { id: 3,   name: "Europa League" },
   { id: 848, name: "Conference League" },
 ];
+
+// Neutral venue overrides — for finals and one-off games at specific stadiums
+const NEUTRAL_VENUE_COORDS: Record<string, { lat: number; lng: number }> = {
+  "puskas arena": { lat: 47.5012, lng: 19.0837 },
+  "puskas": { lat: 47.5012, lng: 19.0837 },
+  "wembley": { lat: 51.5560, lng: -0.2796 },
+  "wembley stadium": { lat: 51.5560, lng: -0.2796 },
+  "hampden": { lat: 55.8235, lng: -4.2521 },
+  "hampden park": { lat: 55.8235, lng: -4.2521 },
+  "dublin arena": { lat: 53.3353, lng: -6.2285 },
+  "aviva stadium": { lat: 53.3353, lng: -6.2285 },
+  "stade de france": { lat: 48.9244, lng: 2.3601 },
+  "allianz arena": { lat: 48.2188, lng: 11.6248 },
+  "olympic stadium athens": { lat: 37.9697, lng: 23.7122 },
+  "luzhniki": { lat: 55.7317, lng: 37.5592 },
+  "estadio da luz": { lat: 38.7526, lng: -9.1845 },
+  "millennium stadium": { lat: 51.4782, lng: -3.1826 },
+  "principality stadium": { lat: 51.4782, lng: -3.1826 },
+  "san siro": { lat: 45.4781, lng: 9.1240 },
+  "juventus stadium": { lat: 45.1096, lng: 7.6413 },
+  "allianz stadium": { lat: 45.1096, lng: 7.6413 },
+  "estadio metropolitano": { lat: 40.4361, lng: -3.5996 },
+  "wanda metropolitano": { lat: 40.4361, lng: -3.5996 },
+  "parc des princes": { lat: 48.8414, lng: 2.2530 },
+};
 
 async function apiFetch(path: string, apiKey: string) {
   const res = await fetch(`${API_FOOTBALL_BASE}${path}`, {
@@ -42,8 +66,25 @@ export async function fetchTeamMatches(
 
       for (const f of fixtures) {
         const isHome = f.teams.home.id === teamId;
-        const venueLat = f.fixture.venue?.lat ?? 0;
-        const venueLng = f.fixture.venue?.lon ?? 0;
+
+        // Check venue name against neutral venue overrides first
+        const venueNameLower = (f.fixture.venue?.name ?? "").toLowerCase();
+        let venueLat = 0;
+        let venueLng = 0;
+
+        for (const [key, coords] of Object.entries(NEUTRAL_VENUE_COORDS)) {
+          if (venueNameLower.includes(key)) {
+            venueLat = coords.lat;
+            venueLng = coords.lng;
+            break;
+          }
+        }
+
+        // If no neutral venue match, use API coordinates
+        if (venueLat === 0) {
+          venueLat = f.fixture.venue?.lat ?? 0;
+          venueLng = f.fixture.venue?.lon ?? 0;
+        }
 
         allMatches.push({
           id: f.fixture.id,
@@ -90,6 +131,7 @@ export async function searchTeams(name: string, apiKey: string) {
       `/teams?search=${encodeURIComponent(name)}`,
       apiKey
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data.response ?? []).map((t: any) => ({
       id: t.team.id,
       name: t.team.name,
@@ -101,9 +143,4 @@ export async function searchTeams(name: string, apiKey: string) {
   } catch {
     return [];
   }
-}
-
-export function resolveVenueCoords(match: Match) {
-  if (match.venue.lat !== 0) return { lat: match.venue.lat, lng: match.venue.lng };
-  return null;
 }
