@@ -1,5 +1,4 @@
 export const VENUE_COORDS: Record<number, { name: string; city: string; lat: number; lng: number }> = {
-  // Premier League 2025/26
   57:  { name: "Emirates Stadium", city: "London", lat: 51.5549, lng: -0.1084 },
   61:  { name: "Stamford Bridge", city: "London", lat: 51.4816, lng: -0.1909 },
   62:  { name: "Goodison Park", city: "Liverpool", lat: 53.4388, lng: -2.9661 },
@@ -20,7 +19,8 @@ export const VENUE_COORDS: Record<number, { name: string; city: string; lat: num
   408: { name: "Portman Road", city: "Ipswich", lat: 52.0554, lng: 1.1449 },
   563: { name: "Villa Park", city: "Birmingham", lat: 52.5090, lng: -1.8847 },
   351: { name: "City Ground", city: "Nottingham", lat: 52.9400, lng: -1.1328 },
-  // Championship 2025/26
+  356: { name: "Vitality Stadium", city: "Bournemouth", lat: 50.7352, lng: -1.8383 },
+  427: { name: "Stadium of Light", city: "Sunderland", lat: 54.9147, lng: -1.3882 },
   59:  { name: "Ewood Park", city: "Blackburn", lat: 53.7286, lng: -2.4893 },
   68:  { name: "Carrow Road", city: "Norwich", lat: 52.6221, lng: 1.3094 },
   69:  { name: "Loftus Road", city: "London", lat: 51.5091, lng: -0.2325 },
@@ -36,24 +36,18 @@ export const VENUE_COORDS: Record<number, { name: string; city: string; lat: num
   345: { name: "Hillsborough Stadium", city: "Sheffield", lat: 53.4116, lng: -1.5005 },
   346: { name: "Vicarage Road", city: "Watford", lat: 51.6498, lng: -0.4017 },
   348: { name: "The Valley", city: "London", lat: 51.4865, lng: 0.0366 },
-  356: { name: "Bramall Lane", city: "Sheffield", lat: 53.3703, lng: -1.4706 },
   380: { name: "Pride Park Stadium", city: "Derby", lat: 52.9149, lng: -1.4469 },
   383: { name: "Kenilworth Road", city: "Luton", lat: 51.8838, lng: -0.4318 },
   384: { name: "The Den", city: "London", lat: 51.4854, lng: -0.0510 },
-  385: { name: "Loftus Road", city: "London", lat: 51.5091, lng: -0.2325 },
   386: { name: "Ashton Gate", city: "Bristol", lat: 51.4400, lng: -2.6201 },
   387: { name: "Ashton Gate", city: "Bristol", lat: 51.4400, lng: -2.6201 },
-  389: { name: "Swansea Stadium", city: "Swansea", lat: 51.6427, lng: -3.9348 },
   390: { name: "Cardiff City Stadium", city: "Cardiff", lat: 51.4730, lng: -3.2024 },
-  394: { name: "Loftus Road", city: "London", lat: 51.5091, lng: -0.2325 },
   404: { name: "Stok Cae Ras", city: "Wrexham", lat: 53.0472, lng: -2.9920 },
-  427: { name: "Stadium of Light", city: "Sunderland", lat: 54.9147, lng: -1.3882 },
   715: { name: "Fratton Park", city: "Portsmouth", lat: 50.7960, lng: -1.0640 },
   750: { name: "Bramall Lane", city: "Sheffield", lat: 53.3703, lng: -1.4706 },
   1076: { name: "Coventry Building Society Arena", city: "Coventry", lat: 52.4482, lng: -1.4959 },
   1081: { name: "Deepdale Stadium", city: "Preston", lat: 53.7726, lng: -2.6910 },
   1082: { name: "Kassam Stadium", city: "Oxford", lat: 51.7163, lng: -1.2131 },
-  // Scottish
   9825: { name: "Celtic Park", city: "Glasgow", lat: 55.8497, lng: -4.2050 },
   9826: { name: "Ibrox Stadium", city: "Glasgow", lat: 55.8507, lng: -4.3091 },
 };
@@ -80,6 +74,7 @@ export const VENUE_NAME_FALLBACK: Record<string, { name: string; city: string; l
   "ipswich": { name: "Portman Road", city: "Ipswich", lat: 52.0554, lng: 1.1449 },
   "aston villa": { name: "Villa Park", city: "Birmingham", lat: 52.5090, lng: -1.8847 },
   "nottingham": { name: "City Ground", city: "Nottingham", lat: 52.9400, lng: -1.1328 },
+  "bournemouth": { name: "Vitality Stadium", city: "Bournemouth", lat: 50.7352, lng: -1.8383 },
   "sunderland": { name: "Stadium of Light", city: "Sunderland", lat: 54.9147, lng: -1.3882 },
   "blackburn": { name: "Ewood Park", city: "Blackburn", lat: 53.7286, lng: -2.4893 },
   "norwich": { name: "Carrow Road", city: "Norwich", lat: 52.6221, lng: 1.3094 },
@@ -108,7 +103,6 @@ export const VENUE_NAME_FALLBACK: Record<string, { name: string; city: string; l
   "oxford": { name: "Kassam Stadium", city: "Oxford", lat: 51.7163, lng: -1.2131 },
   "celtic": { name: "Celtic Park", city: "Glasgow", lat: 55.8497, lng: -4.2050 },
   "rangers": { name: "Ibrox Stadium", city: "Glasgow", lat: 55.8507, lng: -4.3091 },
-  // European
   "real madrid": { name: "Santiago Bernabeu", city: "Madrid", lat: 40.4530, lng: -3.6883 },
   "barcelona": { name: "Spotify Camp Nou", city: "Barcelona", lat: 41.3809, lng: 2.1228 },
   "atletico madrid": { name: "Wanda Metropolitano", city: "Madrid", lat: 40.4361, lng: -3.5996 },
@@ -157,3 +151,9 @@ export const EURO_VENUE_COORDS: Record<string, { lat: number; lng: number }> = {
   "athletic bilbao": { lat: 43.2642, lng: -2.9494 },
   "sevilla": { lat: 37.3840, lng: -5.9705 },
   "olympiacos": { lat: 37.9667, lng: 23.7330 },
+  "napoli": { lat: 40.8279, lng: 14.1931 },
+  "roma": { lat: 41.9336, lng: 12.4547 },
+  "lazio": { lat: 41.9336, lng: 12.4547 },
+  "feyenoord": { lat: 51.8933, lng: 4.5232 },
+  "psv": { lat: 51.4416, lng: 5.4670 },
+};
