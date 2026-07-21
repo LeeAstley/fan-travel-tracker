@@ -7,7 +7,7 @@ import MatchList from "@/components/MatchList";
 import { Team, Match } from "@/lib/types";
 import { computeSummary } from "@/lib/summary";
 
-const CURRENT_SEASON = 2025;
+const CURRENT_SEASON = 2024;
 
 export default function Home() {
   const [team, setTeam] = useState<Team | null>(null);
