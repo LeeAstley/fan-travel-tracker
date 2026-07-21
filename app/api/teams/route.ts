@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { searchTeams } from "@/lib/footballData";
 
 export async function GET(req: NextRequest) {
-  const apiKey = process.env.FOOTBALL_DATA_API_KEY;
+  const apiKey = process.env.API_FOOTBALL_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "FOOTBALL_DATA_API_KEY not configured" }, { status: 500 });
+    return NextResponse.json({ error: "API_FOOTBALL_KEY not configured" }, { status: 500 });
   }
   const name = req.nextUrl.searchParams.get("name") ?? "";
-  if (name.length < 2) {
+  if (name.length < 3) {
     return NextResponse.json({ teams: [] });
   }
   try {
